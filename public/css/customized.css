@@ -1,0 +1,266 @@
+.Proxima-Medium
+{
+    font-family: 'Proxima Medium';
+}
+.Proxima-Regular
+{
+    font-family: 'Proxima';
+}
+.Metro-Regular
+{
+    font-family: 'Metro Regular';
+}
+.marginbottom10
+{
+   margin-bottom:10px;
+}
+.border-blue{
+  border:1px solid #043E95;  
+}
+.border-red{
+    border:1px solid red;  
+}
+.borderred{
+    border:1px solid red;  
+}
+.borderwhite{
+    border:3px solid white;  
+}
+.chsi-color{
+    background-color:#043E95; 
+}
+.chsi-red{
+    background-color:red; 
+}
+.chsi-green{
+    background-color:green;  
+}
+.chsi-ori{
+    background-color : #DFDEDD;  
+}
+.text-white{
+    color: white;
+}
+.text-chsi{
+    color: #043E95;
+}
+.red{
+    color: red;
+}
+.background-app{
+    background-color : #B2E8FD;
+}
+.backgroundwhite{
+    background-color:white;  
+}
+.backgroundspecial{
+    background-color: #043E95;  
+}
+
+.background-application-div{
+    background-color : #CAEFFD;
+}
+.equal-margin{
+    margin:20px;
+}
+.equal-padding{
+    margin:20px;
+}
+.radius{
+    border-radius: 10px;
+}
+.radius-log{
+    border-radius: 10px;
+    background-color:white;
+}
+.labelsize{
+    margin-left:5px;
+    font-size: 14px;
+    line-height: 1px;
+}
+.app-margin{
+    padding-left:2px;
+    padding-right:2px;
+}
+.addmargin{
+    margin-top:4px;
+}
+.margintop{
+    margin-top:10px;
+}
+.no-margin{
+    padding-left:0px;
+    padding-right:0px;
+    text-align:center;
+}
+.title-background{
+    background-color : #033A93;
+    color:white;
+    padding:10px;
+}
+.text-center{
+    text-align:center;
+}
+.text-right{
+    text-align:right;
+}
+.text-left{
+    text-align:left;
+}
+.dropdown-center{
+    padding:5px;
+}
+.unreadable{
+    background: #C0D5F7;
+    pointer-events: none;
+}
+.backgrounddarkbrown{
+    background-color : #737476;
+    color:white;
+    margin-right:5px;
+}
+.btnradius{
+    border-radius: 10px;
+}
+.alertmessage{
+    border-radius: 10px;
+    background-color:#00B6FF;
+    color:white;
+}
+.knowmore{
+    border-radius: 50px;
+    right:0px;
+    bottom:10px;
+}
+.right{
+    right:1px;
+}
+.toright{
+    right:1px;
+}
+hr.new5 {
+    border: 1px solid gray;
+    border-radius: 5px;
+  }
+.shadow{
+box-shadow: 5px 10px 18px gray;
+}
+.nopaddings{
+    padding:0px;
+}
+.fivepaddingstop{
+    padding-top:3px;
+}
+.fivepaddingsbottom{
+    padding-bottom:3px;
+}
+.newbackcolor2{
+    background-color:#7CD7F9;
+}
+
+
+.mcircle{
+    width: 35px;
+    height: 35px;
+    /* border: 2px solid #033785; */
+    border-radius: 100px;
+    position: relative;
+    top: auto;
+    left: auto;
+}
+.scircle{
+    width: 15px;
+    height: 15px;
+    /* border: 2px solid #033785; */
+    border-radius: 100px;
+    position: relative;
+}
+.n_sel {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+}
+
+
+.vertical-line {
+    width: 1px;
+    height: 25px;
+    background: white;
+    margin: 0px auto 0 auto;
+    /* border: 2px solid gray; */
+    top: 50%;
+    left: 50%;
+    /* position: relative; */
+}
+.vertical-line2 {
+    width: 1px;
+    height: 35px;
+    background: white;
+    margin: 0px auto 0 auto;
+    /* border: 2px solid gray; */
+    top: 50%;
+    left: 50%;
+    /* position: relative; */
+}
+.all_blue{
+    background: #033785;
+}
+
+.border_select{
+    border: 2px solid #033785;
+}
+.color_select{
+    color: #033785;
+}
+.n_border_select{
+    border: 2px solid gray;
+}
+.n_color_select{
+    color: gray;
+}
+
+.unseen{
+    visibility: hidden;
+} 
+.padding5{
+    padding : 5px;
+} 
+.zoom {
+    transition: transform .2s; /* Animation */
+  }
+  
+  .zoom:hover {
+    transform: scale(1.5); /* (150% zoom - Note: if the zoom is too large, it will go outside of the viewport) */
+  }
+
+
+.cwarning{
+    background-color: #f1a500;
+}
+.cdanger{
+    background-color: #f71d4c;
+}
+.cinfo{
+    background-color: #00bbff;
+}
+.cdefault{
+    background-color: white;
+}
+
+.cpadding{
+    padding:10px
+}
+
+.div_bot .btn_bot{
+    position: absolute;
+    bottom : 0px;
+    left: 0px;
+}
+/* NOTIFICATION */
+
+/*Notification link*/
+
+  
+

@@ -1,0 +1,420 @@
+/*import font*/
+
+@font-face {
+
+    font-family: 'FiraSansExtraCondensed'; /*a name to be used later*/
+
+    src: url('../dist/fonts/firaSansExtra/FiraSansExtraCondensed-Regular.ttf'); /*URL to font*/
+
+}
+
+@font-face {
+
+    font-family: 'Roboto'; /*a name to be used later*/
+
+    src: url('../dist/fonts/Roboto/Roboto-Regular.ttf'); /*URL to font*/
+
+}
+
+@font-face {
+
+    font-family: 'metro'; /*a name to be used later*/
+
+    src: url('../dist/fonts/metro/metro.ttf'); /*URL to font*/
+
+}
+
+/*--------------------------------*/
+
+body {
+
+    /*background-color: #0D47A1;*/
+
+    counter-reset: item-counter; 
+}
+
+.float-link {
+    position: absolute;
+    top: 5px;
+    left: 0;
+    margin-left:10px; 
+}
+/*every ajax loading*/
+
+
+
+/*--------------------------------*/
+
+a:link, a:visited{
+
+    text-decoration: none;
+
+}
+
+
+
+.auto-center {
+
+  margin-right: auto;
+
+  margin-left: auto;
+
+}
+
+.relative {
+
+  position: relative;
+
+}
+
+/*position*/
+
+.radio-inline label, .checkbox-inline label{
+
+    font-weight: lighter !important;
+
+}
+
+/*--------------------------------*/
+
+/*ribbon*/
+
+.ribbon {
+
+    position: absolute;
+
+    right: -5px;
+
+    top: -5px;
+
+    z-index: 1;
+
+    overflow: hidden;
+
+    width: 200px;
+
+    height: 200px;
+
+    text-align: right;
+
+}
+
+.ribbon span {
+
+    font-size: 16px;
+
+    font-weight: bold;
+
+    color: #003366;
+
+    text-transform: uppercase;
+
+    text-align: center;
+
+    line-height: 26px;
+
+    transform: rotate(45deg);
+
+    -webkit-transform: rotate(45deg);
+
+    width: 209px;
+
+    display: block;
+
+    background: #FF9800; /*orange*/
+
+    /*background: linear-gradient(#FF5722 0%, #982f0e 100%);*/
+
+    box-shadow: 0 3px 10px -5px rgba(0, 0, 0, 1);
+
+    position: absolute;
+
+    top: 53px;
+
+    right: -39px;
+
+    font-family: 'FiraSansExtraCondensed';
+
+}
+
+.ribbon span::before {
+
+  content: "";
+
+  position: absolute; left: 0px; top: 100%;
+
+  z-index: -1;
+
+  border-left: 3px solid #E65100;
+
+  border-right: 3px solid transparent;
+
+  border-bottom: 3px solid transparent;
+
+  border-top: 3px solid #E65100;
+
+}
+
+.ribbon span::after {
+
+  content: "";
+
+  position: absolute; right: 0px; top: 100%;
+
+  z-index: -1;
+
+  border-left: 3px solid transparent;
+
+  border-right: 3px solid #E65100;
+
+  border-bottom: 3px solid transparent;
+
+  border-top: 3px solid #E65100;
+
+}
+
+/*--------------------------------*/
+
+
+
+/*card*/
+
+.card {
+  margin-top: 50px;
+}
+
+.card-body {
+  padding: 15px;
+}
+
+/*--------------------------------*/
+
+
+
+/*logo*/
+
+.logo {
+  max-height: 50px;
+}
+
+/*--------------------------------*/
+/*card*/
+
+.card-heading label{
+
+    font-size: 22px;
+    font-family: 'FiraSansExtraCondensed';
+    margin-bottom: 15px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    color: #FF6600;
+    font-weight: normal;
+    margin-top: 15px;
+    /*color: rgba(0, 0, 0, 0.42);*/
+    color: #fff;
+
+}
+
+.card-heading label small {
+    font-size: 75%;
+    color: rgba(0,0,0,0.5);
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.card-heading-main {
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    margin-bottom: 15px;
+    padding: 30px;
+    text-align: center;
+    background-size: 100%;
+}
+
+.card-heading-main h1{
+
+    /*text-shadow:3px 2px 0 #000000, 7px 6px 0 rgba(0,0,0,0.15);*/
+
+    font-family: metro;
+
+    margin:0;
+
+    color: #fff;
+
+}
+
+.caritashealth{
+
+   font-family: 'metro'; /*a name to be used later*/
+
+    /*src: url('../dist/fonts/metro/metro.ttf'); /*URL to font*/
+
+}
+
+.card .form-group label, .form-label {
+
+    /*font-family: 'Roboto';*/
+
+    color:black;
+
+}
+
+.card{
+
+    background-color: white;
+
+    padding-bottom: 0px !important;
+
+    border-radius: 6px;
+
+    margin-bottom: 30px;
+
+}
+
+.card .form-group label, .form-label {
+
+    /*font-family: 'Roboto';*/
+
+
+    color: #fff;
+
+}
+
+.card-initial{
+
+    min-height:initial;
+
+}
+
+.card-counselor {
+
+    background-color:#ffce85 ;
+
+    padding:30px;
+
+    border-radius: 6px; 
+
+}
+
+.last-card {
+
+    position: relative;
+
+}
+
+.sub-card {
+    padding: 30px;
+    border:1px solid #e8e8e8;
+    position: relative;
+    margin-bottom:15px; 
+    border-radius: 6px;
+    /*background: #eee;*/
+    background: #fff;
+    -webkit-box-shadow: 0 8px 6px -6px  rgba(0,0,0,0.39);
+    -moz-box-shadow: 0 8px 6px -6px  rgba(0,0,0,0.39);
+    box-shadow: 0 8px 8px -9px  rgba(0,0,0,0.39);
+    /*border-bottom:0;*/
+    background-color: #f7f7f9;
+}
+
+.sub-card:before{
+    background: #fff;
+    color:black;
+    font-family: 'FiraSansExtraCondensed';
+    font-weight: bold;
+    padding:2px;
+    text-align: center;
+    position: absolute;
+    width: 60px;
+    height: 35px;
+    border-bottom-left-radius: 110px;
+    border-bottom-right-radius: 110px;
+    border: 1px solid #e8e8e8;
+    border-top: 0;
+    top: -1px;
+    left: 50%;
+    transform: translate(-50%, 0);
+    counter-increment: item-counter;
+    content:counter(item-counter);
+    font-size: 18px;
+
+}
+
+.card-orange {
+    background-color:#ffce85 ;
+    padding:30px;
+    border: transparent;
+    border-radius: 6px; 
+    border-bottom:0;
+}
+
+.card-counselor:before {
+
+    color:#ffce85 ;
+
+}
+.card-footer {
+    position: relative;
+    bottom: 0;
+    width: calc(100% + 60px);
+    border-top: 1px solid #ddd;
+    margin:30px -30px 0 ;
+    padding: 30px;
+    border-bottom-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+.card-carmine-red {
+    /*background-color:#960018 ;*/
+    background-color:#0088cc;
+    padding:30px;
+    border: transparent;
+    border-radius: 6px; 
+    border-bottom:0;
+}
+.card-sky-blue {
+
+    /*background-color:#7EC0EE ;*/
+
+    background-color:#0088cc;
+
+    padding:30px;
+
+    border: transparent;
+
+    border-radius: 6px; 
+
+    border-bottom:0;
+
+}
+
+
+.card-sky-blue .form-group label, .form-label {
+
+    /*color: #003366;*/
+
+    color: black;
+
+}
+
+
+
+.card-sky-blue .card-heading label {
+
+    /*color: #003366;*/
+
+    color: #fff;
+
+}
+
+
+
+.card-sky-blue .card-heading label small{
+
+    /*color: rgba(0, 51, 102, 0.71);*/
+
+    color: rgba(255, 255, 255, 0.5);
+
+}
+
+/*--------------------------------*/
+
+

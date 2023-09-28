@@ -1,0 +1,421 @@
+<?php
+
+namespace App\Http\Controllers;
+use GuzzleHttp\Client;
+use GuzzleHttp\RequestOptions;
+use GuzzleHttp\Exception\GuzzleException;
+use Yajra\Datatables\Datatables;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\Request;
+use App\Http\Requests;
+use App\Http\Controllers\Controller;
+use DB;
+use Illuminate\Support\Collection;
+use PDF;
+use Illuminate\Support\Facades\Crypt;
+use App\Http\Controllers\encryptionController;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Validator;
+use Chumper\Zipper\Repositories\RepositoryInterface;
+use Exception;
+use Illuminate\Filesystem\Filesystem;
+use ZipArchive;
+use DateTime;
+use Illuminate\Support\Facades\Mail;
+
+class pdfController extends Controller 
+{
+    public function output(Request $request, $id)
+    {
+        $iid = $id;
+        $a = 0;
+
+        $collect = Collect(DB::table('pdf_client_data as pcd')
+            ->where('pcd.client_iid',$iid)
+            ->join('tbl_product as P','P.iid','pcd.product_iid')
+            ->select(
+                DB::Raw('DATE_FORMAT(pcd.date_created, \'%M %d, %Y\') AS date_created'),
+                'pcd.date_created as date_created2',
+                'P.description',
+                'P.policy_year',
+                'P.paying_period',
+                DB::Raw('(P.policy_year - P.paying_period) as bonus_period'),
+                'pcd.client_iid', 
+                'pcd.payor', 
+                'pcd.kiddie_name', 
+                'pcd.gender', 
+                'pcd.date_of_birth',
+                'pcd.date_of_birth2',
+                DB::Raw('\'\' as kiddie_age'),
+                DB::Raw('DATE_FORMAT(pcd.date_of_birth2, "%Y") as p_year'),
+                DB::Raw('DATE_FORMAT(pcd.date_of_birth2, "%b") as p_month'),
+                DB::Raw('DATE_FORMAT(pcd.date_of_birth2, "%e") as p_day'),
+                'pcd.age', 
+                'pcd.address1', 
+                'pcd.address', 
+                'pcd.product_iid', 
+                'pcd.product_type', 
+                'pcd.plan_name',
+                'pcd.insurance_coverability',
+                DB::Raw('Case When pcd.insurance_coverability = 0 Then \'WIB\' When pcd.insurance_coverability = 1 Then \'NIB\' Else \'Invalid Value\' End as plan_type'),
+                'pcd.contract_price',
+                'pcd.age_range',
+                DB::Raw('\'\' as spot_cash'),
+                DB::Raw('\'\' as annual'),
+                DB::Raw('\'\' as semi_annual'),
+                DB::Raw('\'\' as quarterly'),
+                DB::Raw('\'\' as monthly'),
+                DB::Raw('\'\' as coverage_roomrate'),
+                // DB::Raw('FORMAT(coverage_roomrate,2) as coverage_roomrate'),
+                DB::Raw('P.description as page'),
+                DB::Raw('\'\' as max_coverage_per_year'),
+                DB::Raw('\'\' as membership_previleges'),
+                DB::Raw('\'\' as total_benefits'),
+                DB::Raw('\'\' as mbf'),
+                'pcd.hc_name',
+                'pcd.hc_designation',
+                'pcd.hc_contact',
+                'pcd.hc_branch',
+                DB::Raw('\'\' as version')
+            )
+            ->get());
+
+            // print_r($collect);exit;
+           
+        if(count($collect) != 0)
+        {
+            if($collect[0]->product_type == 0)
+            {
+                if($collect[0]->age > 6 && $collect[0]->age < 72)
+                {
+                    
+                }
+                else
+                {
+                    $a = 1;
+                    $data['status'] = "error";
+                    $data['message'] = "Entry Age: 7 to less than 71 years old Only";
+                    $data['info'] = "danger";
+                    
+                    print_r(json_encode($data));
+                }
+            }
+            elseif($collect[0]->product_type == 1)
+            {
+                $current_date = date_create(date('Y-m-d'));
+                $birthdate=date_create($collect[0]->date_of_birth);
+                $diff=date_diff($current_date,$birthdate);
+               
+                if(intval($collect[0]->age) > 7)
+                {
+                    $a = 1;
+                    $data['status'] = "error";
+                    $data['message'] = "Entry Age:  31 days to less than 7 years old";
+                    $data['info'] = "danger";
+                    print_r(json_encode($data));
+                }
+                elseif(intval($collect[0]->age) == 0 && intval($diff->format("%a")) < 30)
+                {
+                    $a = 1;
+                    $data['status'] = "error";
+                    $data['message'] = "Entry Age:  31 days to less than 7 years old";
+                    $data['info'] = "danger";
+                    print_r(json_encode($data));
+                }
+                else
+                {
+
+                }
+            }
+       
+            if($a==0)
+            {
+
+                $diff = date_diff(date_create($collect[0]->date_of_birth), date_create($collect[0]->date_created2));
+               
+                if($diff->format('%y') > 1)
+                {
+                    $collect[0]->kiddie_age = $diff->format('%y') .' years';
+                }
+                else
+                {
+                    $collect[0]->kiddie_age = $diff->format('%y') .' year';
+                }
+                
+                if($diff->format('%m') < 2)
+                {
+                    $collect[0]->kiddie_age .= ' and '. $diff->format('%m') .' month';
+                }
+                else
+                {
+                    $collect[0]->kiddie_age .= ' and '. $diff->format('%m') .' months';
+                }
+
+                $current_date = date_create(date('Y-m-d'));
+                $birthdate=date_create($collect[0]->date_of_birth);
+                $diff=date_diff($current_date,$birthdate);
+
+                //-------------------------------------------------------------------------------------
+                $spot_cash = collect(DB::table('tbl_price')
+                    ->whereRaw('LOCATE(\'day\',age_range) = 0')
+                    ->where('tbl_product_iid',$collect[0]->product_iid)
+                    ->where('plan_name', $collect[0]->plan_name)
+                    ->where('plan_type',$collect[0]->insurance_coverability)
+                    ->where('mode_of_payment',0)
+                    ->whereRaw('? BETWEEN age_range_from AND age_range_to',[$collect[0]->age])
+                    
+                    ->orWhereRaw('LOCATE(\'day\',age_range) != 0')
+                    ->where('tbl_product_iid',$collect[0]->product_iid)
+                    ->where('plan_name', $collect[0]->plan_name)
+                    ->where('plan_type',$collect[0]->insurance_coverability)
+                    ->where('mode_of_payment',0)
+                    ->WhereRaw('age_range_from <= (Select TO_DAYS(?) - TO_DAYS(?))',[$collect[0]->date_created2,$collect[0]->date_of_birth2])
+                    ->where('age_range_to','>',$collect[0]->age)
+                    ->select(DB::Raw('Case When price_note != \'\' then price_note else FORMAT(price,2) end as price'))
+                    ->get());
+        
+                    $collect[0]->spot_cash  = $spot_cash[0]->price;
+
+                    
+                   
+                //-------------------------------------------------------------------------------------
+                $quarterly = collect(DB::table('tbl_price')
+                    ->whereRaw('LOCATE(\'day\',age_range) = 0')
+                    ->where('tbl_product_iid',$collect[0]->product_iid)
+                    ->where('plan_name', $collect[0]->plan_name)
+                    ->where('plan_type',$collect[0]->insurance_coverability)
+                    ->where('mode_of_payment',1)
+                    ->whereRaw('? BETWEEN age_range_from AND age_range_to',[$collect[0]->age])
+                    
+                    ->orWhereRaw('LOCATE(\'day\',age_range) != 0')
+                    ->where('tbl_product_iid',$collect[0]->product_iid)
+                    ->where('plan_name', $collect[0]->plan_name)
+                    ->where('plan_type',$collect[0]->insurance_coverability)
+                    ->where('mode_of_payment',1)
+                    ->WhereRaw('age_range_from <= (Select TO_DAYS(?) - TO_DAYS(?))',[$collect[0]->date_created2,$collect[0]->date_of_birth2])
+                    ->where('age_range_to','>',$collect[0]->age)
+                    ->select(DB::Raw('Concat(\'\',FORMAT(price,2)) as price'))
+                    ->get());
+            
+                    $collect[0]->quarterly  = $quarterly[0]->price;
+
+                   
+                     
+                //-------------------------------------------------------------------------------------
+                $semi_annual = collect(DB::table('tbl_price')
+                    ->whereRaw('LOCATE(\'day\',age_range) = 0')
+                    ->where('tbl_product_iid',$collect[0]->product_iid)
+                    ->where('plan_name', $collect[0]->plan_name)
+                    ->where('plan_type',$collect[0]->insurance_coverability)
+                    ->where('mode_of_payment',2)
+                    ->whereRaw('? BETWEEN age_range_from AND age_range_to',[$collect[0]->age])
+                    
+                    ->orWhereRaw('LOCATE(\'day\',age_range) != 0')
+                    ->where('tbl_product_iid',$collect[0]->product_iid)
+                    ->where('plan_name', $collect[0]->plan_name)
+                    ->where('plan_type',$collect[0]->insurance_coverability)
+                    ->where('mode_of_payment',2)
+                    ->WhereRaw('age_range_from <= (Select TO_DAYS(?) - TO_DAYS(?))',[$collect[0]->date_created2,$collect[0]->date_of_birth2])
+                    ->where('age_range_to','>',$collect[0]->age)
+                    ->select(DB::Raw('Concat(\'\',FORMAT(price,2)) as price'))
+                    ->get());
+            
+                    $collect[0]->semi_annual  = $semi_annual[0]->price;
+                    
+                //-------------------------------------------------------------------------------------
+                $annual = collect(DB::table('tbl_price')
+                    ->whereRaw('LOCATE(\'day\',age_range) = 0')
+                    ->where('tbl_product_iid',$collect[0]->product_iid)
+                    ->where('plan_name', $collect[0]->plan_name)
+                    ->where('plan_type',$collect[0]->insurance_coverability)
+                    ->where('mode_of_payment',3)
+                    ->whereRaw('? BETWEEN age_range_from AND age_range_to',[$collect[0]->age])
+                    
+                    ->orWhereRaw('LOCATE(\'day\',age_range) != 0')
+                    ->where('tbl_product_iid',$collect[0]->product_iid)
+                    ->where('plan_name', $collect[0]->plan_name)
+                    ->where('plan_type',$collect[0]->insurance_coverability)
+                    ->where('mode_of_payment',3)
+                    ->WhereRaw('age_range_from <= (Select TO_DAYS(?) - TO_DAYS(?))',[$collect[0]->date_created2,$collect[0]->date_of_birth2])
+                    ->where('age_range_to','>',$collect[0]->age)
+                    ->select(DB::Raw('Concat(\'\',FORMAT(price,2)) as price'))
+                    ->get());
+        
+                $collect[0]->annual  = $annual[0]->price;
+
+                 //-------------------------------------------------------------------------------------
+                 $monthly = collect(DB::table('tbl_price')
+                 ->whereRaw('LOCATE(\'day\',age_range) = 0')
+                 ->where('tbl_product_iid',$collect[0]->product_iid)
+                 ->where('plan_name', $collect[0]->plan_name)
+                 ->where('plan_type',$collect[0]->insurance_coverability)
+                 ->where('mode_of_payment',5)
+                 ->whereRaw('? BETWEEN age_range_from AND age_range_to',[$collect[0]->age])
+                 
+                 ->orWhereRaw('LOCATE(\'day\',age_range) != 0')
+                 ->where('tbl_product_iid',$collect[0]->product_iid)
+                 ->where('plan_name', $collect[0]->plan_name)
+                 ->where('plan_type',$collect[0]->insurance_coverability)
+                 ->where('mode_of_payment',5)
+                 ->WhereRaw('age_range_from <= (Select TO_DAYS(?) - TO_DAYS(?))',[$collect[0]->date_created2,$collect[0]->date_of_birth2])
+                 ->where('age_range_to','>',$collect[0]->age)
+                 ->select(DB::Raw('Concat(\'\',FORMAT(price,2)) as price'))
+                 ->get());
+
+                if(count($monthly) != 0)
+                {
+                    $collect[0]->monthly  = $monthly[0]->price;
+                }
+                else
+                {
+                    $collect[0]->monthly  = 'null';
+                }
+     
+               
+
+                $coverage_roomrate = Collect(DB::table('tbl_coverage')
+                ->where('tbl_product_iid',$collect[0]->product_iid)
+                ->where('plan_name', $collect[0]->plan_name)
+                ->where('status', 0)
+                ->select(DB::Raw('FORMAT(max_coverage,2) as max_coverage'),DB::Raw('FORMAT(room_rate,2) as room_rate'),'max_coverage as max_coverage1')
+                ->orderby('year','asc')
+                ->get());
+                $max_coverage_per_year = 0;
+                //print_r($coverage_roomrate); exit;
+                if(count($coverage_roomrate) != 0)
+                {
+                    $collect[0]->coverage_roomrate  = $coverage_roomrate;
+                    foreach($coverage_roomrate as $row)
+                    {
+                        $max_coverage_per_year = $max_coverage_per_year + intval($row->max_coverage1);
+                    }
+                    $collect[0]->max_coverage_per_year =  number_format($max_coverage_per_year,2);
+                }
+                $membership_previleges = array();
+                if($collect[0]->product_iid == 1){
+                    /* MAX */
+                    $membership_previleges = array(['outpatient'=>'252,000',
+                        'ape-up'=>'49,500',
+                        'preventive_health_care'=>'19,000',
+                        'dental_care'=>'40,000',
+                        'other_services'=>'40,000',
+                        'total_mp'=>'400,500']);
+                }
+                elseif($collect[0]->product_iid == 2){
+                    /* SUPREME */
+
+                    $membership_previleges = array([
+                        'ape-up'=>'35,500',
+                        'total_mp'=>'35,500']);
+
+                    $explode = explode("/",$collect[0]->plan_name);
+                    $explode = str_replace(" units","",$explode[1]);
+                    
+                    $mbf = 10000 * doubleval($explode);
+                    $collect[0]->mbf = $mbf;
+
+                
+                }
+                elseif($collect[0]->product_iid == 3 || $collect[0]->product_iid == 4 || $collect[0]->product_iid == 5)
+                {
+                     /* ULTRA */
+                    $membership_previleges = array(['outpatient'=>'252,600',
+                        'ape-up'=>'49,500',
+                        'preventive_health_care'=>'19,000',
+                        'dental_care'=>'28,000',
+                        'dependent_consult'=>'20,000.00',
+                        'total_mp'=>'369,100']);
+                }
+                elseif($collect[0]->product_iid == 6){
+                     /* KIDDIE */
+                    $membership_previleges = array(['consultation'=>'72,000.00',
+                        'annual_well_kiddie_check-up'=>'8,959.00',
+                        'dental_care'=>'69,000.00',
+                        'immunization'=>'16,000.00',
+                        'total_mp'=>'165,959.00']);
+                }
+                elseif($collect[0]->product_iid == 7){
+                     /* KIDDIE */
+                    $membership_previleges = array(['consultation'=>'21,600.00',
+                        'annual_well_kiddie_check-up'=>'2,688.00',
+                        'dental_care'=>'20,700.00',
+                        'immunization'=>'4,800.00',
+                        'total_mp'=>'49,788.00']);
+                }
+                elseif($collect[0]->product_iid == 8){
+                     /* KIDDIE */
+                    $membership_previleges = array(['consultation'=>'36,000.00',
+                        'annual_well_kiddie_check-up'=>'4,480.00',
+                        'dental_care'=>'34,500.00',
+                        'immunization'=>'8,000.00',
+                        'total_mp'=>'82,980.00']);
+                }
+                elseif($collect[0]->product_iid == 9){
+                     /* CORE 10 */
+                    $membership_previleges = array(['outpatient'=>'132,000.00',
+                        'ape-up'=>'18,929.00',
+                        'preventive_health_care'=>'19,000.00',
+                        'dental_care'=>'69,000.00',
+                        'dependent_consult'=>'24,000.00',
+                        'total_mp'=>'262,929.00']);
+                }
+                elseif($collect[0]->product_iid == 10){
+                     /* CORE 6 */
+                    $membership_previleges = array(['outpatient'=>'79,200.00',
+                        'ape-up'=>'11,358.00',
+                        'preventive_health_care'=>'11,000.00',
+                        'dental_care'=>'41,400.00',
+                        'dependent_consult'=>'14,400.00',
+                        'total_mp'=>'157,358.00']);
+                }
+                elseif($collect[0]->product_iid == 11){
+                     /* UPGRADED CORE 10 */
+                    $membership_previleges = array(['outpatient'=>'149,160.00',
+                        'ape-up'=>'18,929.00',
+                        'preventive_health_care'=>'19,000.00',
+                        'dental_care'=>'69,000.00',
+                        'dependent_consult'=>'24,000.00',
+                        'total_mp'=>'280,089.00']);
+                }
+                $collect[0]->membership_previleges = $membership_previleges;
+                $collect[0]->total_benefits = number_format(floatval(str_replace(',','',$collect[0]->membership_previleges[0]['total_mp'])) + floatval(str_replace(',','',$collect[0]->max_coverage_per_year)),2);
+
+                $p = explode('/',$collect[0]->plan_name);
+                $date=date_create(date("Y-m-d"));
+                $pdf_name = $collect[0]->description.' PLAN '. $p[0] .'-'. date_format($date,"M d, Y").'.pdf';
+                
+                
+                $collect[0]->version = "Version 7 as of June 1, 2022";
+
+                if($collect[0]->product_iid == 1)
+                {
+                    $collect[0]->version = "Version 9 as of June 16, 2022";
+                    $pdf = PDF::loadView('max_proposal_pdf',compact('collect'))->setPaper('Letter', 'landscape');
+                }
+                if($collect[0]->product_iid == 2)
+                {
+                    $collect[0]->version = "Version 9 as of June 18, 2022";
+                    $pdf = PDF::loadView('supreme_proposal_pdf',compact('collect'))->setPaper('Letter', 'landscape');
+                }
+                elseif($collect[0]->product_iid == 3 || $collect[0]->product_iid == 4 || $collect[0]->product_iid == 5)
+                {
+                    $collect[0]->version = "Version 9 as of June 23, 2022";
+                    $pdf = PDF::loadView('ultra_proposal_pdf',compact('collect'))->setPaper('Letter', 'landscape');
+                }
+                elseif($collect[0]->product_iid >= 6 && $collect[0]->product_iid <= 11)
+                {
+                    if($collect[0]->product_iid >= 6 && $collect[0]->product_iid <= 8)
+                    {
+                        $collect[0]->version = "Version 9 as of June 29, 2022";
+                    }
+                    else
+                    {
+                        $collect[0]->version = "Version 9 as of July 11, 2022";
+                    }
+                    $pdf = PDF::loadView('proposal_pdf_2',compact('collect'))->setPaper('Letter', 'landscape');
+                }
+                return $pdf->stream($pdf_name);
+            }
+        }
+    }
+}
